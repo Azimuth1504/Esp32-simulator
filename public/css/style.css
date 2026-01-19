@@ -1,0 +1,825 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --depth: 5vmin;
+  --on: 0;
+  --size: 25vmin;
+  --bg: hsl(calc(200 - (var(--on) * 160)), calc((20 + (var(--on) * 50)) * 1%), calc((20 + (var(--on) * 60)) * 1%));
+  --cord: hsl(0, 0%, calc((60 - (var(--on) * 50)) * 1%));
+  --stroke: hsl(0, 0%, calc((60 - (var(--on) * 50)) * 1%));
+  --shine: hsla(0, 0%, 100%, calc(0.75 - (var(--on) * 0.5)));
+  --cap: hsl(0, 0%, calc((40 + (var(--on) * 30)) * 1%));
+  --filament: hsl(45, calc(var(--on) * 80%), calc((25 + (var(--on) * 75)) * 1%));
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  overflow: hidden;
+  font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+}
+
+/* Temperature / Humidity Display Box */
+.temperature-box {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: linear-gradient(
+    145deg,
+    hsl(210, calc((20 + (var(--on) * 30)) * 1%), calc((20 + (var(--on) * 25)) * 1%)),
+    hsl(210, calc((30 + (var(--on) * 40)) * 1%), calc((10 + (var(--on) * 20)) * 1%))
+  );
+  padding: 20px 30px;
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5),
+    inset 0 2px 4px rgba(255, 255, 255, 0.1);
+  z-index: 1000;
+  border: 2px solid
+    hsl(210, calc((30 + (var(--on) * 20)) * 1%), calc((30 + (var(--on) * 30)) * 1%));
+  transition: all 0.5s ease;
+}
+
+.temp-label {
+  text-align: center;
+  color: hsl(
+    200,
+    calc((20 + (var(--on) * 60)) * 1%),
+    calc((80 + (var(--on) * 20)) * 1%)
+  );
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  margin-bottom: 15px;
+  text-shadow: 0 0 10px
+    hsla(
+      calc(200 - (var(--on) * 160)),
+      calc((50 + (var(--on) * 30)) * 1%),
+      50%,
+      0.5
+    );
+  transition: all 0.5s ease;
+}
+
+.led-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: hsl(
+    220,
+    calc((30 + (var(--on) * 20)) * 1%),
+    calc((5 + (var(--on) * 15)) * 1%)
+  );
+  padding: 15px 20px;
+  border-radius: 8px;
+  box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.8);
+  transition: all 0.5s ease;
+}
+
+.digit {
+  position: relative;
+  width: 40px;
+  height: 60px;
+  display: inline-block;
+}
+
+.segment {
+  position: absolute;
+  background: hsl(0, 0%, calc((10 + (var(--on) * 5)) * 1%));
+  box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s ease;
+}
+
+.segment.active {
+  background: hsl(
+    calc(0 + (var(--on) * 30)),
+    calc((80 + (var(--on) * 20)) * 1%),
+    calc((50 + (var(--on) * 10)) * 1%)
+  );
+  box-shadow:
+    0 0 10px hsla(calc(0 + (var(--on) * 30)), 100%, 50%, 0.8),
+    0 0 20px hsla(calc(0 + (var(--on) * 30)), 100%, 50%, 0.6),
+    inset 0 0 5px hsla(calc(0 + (var(--on) * 30)), 100%, 50%, 0.5);
+}
+
+/* Segment positions for 7-seg */
+.segment.a {
+  top: 0;
+  left: 8px;
+  width: 24px;
+  height: 4px;
+  clip-path: polygon(
+    15% 0%,
+    85% 0%,
+    100% 50%,
+    85% 100%,
+    15% 100%,
+    0% 50%
+  );
+}
+
+.segment.b {
+  top: 4px;
+  right: 4px;
+  width: 4px;
+  height: 24px;
+  clip-path: polygon(
+    50% 0%,
+    100% 15%,
+    100% 85%,
+    50% 100%,
+    0% 85%,
+    0% 15%
+  );
+}
+
+.segment.c {
+  bottom: 4px;
+  right: 4px;
+  width: 4px;
+  height: 24px;
+  clip-path: polygon(
+    50% 0%,
+    100% 15%,
+    100% 85%,
+    50% 100%,
+    0% 85%,
+    0% 15%
+  );
+}
+
+.segment.d {
+  bottom: 0;
+  left: 8px;
+  width: 24px;
+  height: 4px;
+  clip-path: polygon(
+    15% 0%,
+    85% 0%,
+    100% 50%,
+    85% 100%,
+    15% 100%,
+    0% 50%
+  );
+}
+
+.segment.e {
+  bottom: 4px;
+  left: 4px;
+  width: 4px;
+  height: 24px;
+  clip-path: polygon(
+    50% 0%,
+    100% 15%,
+    100% 85%,
+    50% 100%,
+    0% 85%,
+    0% 15%
+  );
+}
+
+.segment.f {
+  top: 4px;
+  left: 4px;
+  width: 4px;
+  height: 24px;
+  clip-path: polygon(
+    50% 0%,
+    100% 15%,
+    100% 85%,
+    50% 100%,
+    0% 85%,
+    0% 15%
+  );
+}
+
+.segment.g {
+  top: 28px;
+  left: 8px;
+  width: 24px;
+  height: 4px;
+  clip-path: polygon(
+    15% 0%,
+    85% 0%,
+    100% 50%,
+    85% 100%,
+    15% 100%,
+    0% 50%
+  );
+}
+
+/* Ký hiệu ° và % dùng cùng màu với LED */
+.degree-symbol,
+.celsius-symbol,
+.percent-symbol {
+  color: hsl(
+    calc(0 + (var(--on) * 30)),
+    calc((80 + (var(--on) * 20)) * 1%),
+    calc((50 + (var(--on) * 10)) * 1%)
+  );
+  font-size: 32px;
+  font-weight: 700;
+  font-family: "Courier New", "Consolas", monospace;
+  margin-left: 4px;
+  text-shadow:
+    0 0 10px hsla(calc(0 + (var(--on) * 30)), 100%, 50%, 0.8),
+    0 0 20px hsla(calc(0 + (var(--on) * 30)), 100%, 50%, 0.6);
+  transition: all 0.5s ease;
+  letter-spacing: -2px;
+}
+
+.degree-symbol {
+  font-size: 24px;
+  margin-left: 5px;
+}
+
+label {
+  position: absolute;
+  opacity: 0.5;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  left: 0;
+  z-index: 2;
+}
+
+input {
+  height: 0;
+  width: 0;
+  position: fixed;
+  left: 100%;
+  transform: scale(0);
+}
+
+/* Toggle / dây kéo */
+.toggle {
+  height: var(--size);
+  width: var(--size);
+  transform: translate(-50%, -100%);
+  z-index: 2;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate3d(-50%, -100%, calc(var(--depth) * 3));
+}
+
+.toggle-scene {
+  overflow: visible !important;
+  width: 100%;
+  position: absolute;
+}
+
+.toggle-scene__arm {
+  display: none;
+}
+
+.toggle-scene__cord {
+  stroke: var(--cord);
+  cursor: move;
+}
+
+.toggle-scene__cord:nth-of-type(1) {
+  display: none;
+}
+
+.toggle-scene__cord:nth-of-type(2),
+.toggle-scene__cord:nth-of-type(3),
+.toggle-scene__cord:nth-of-type(4),
+.toggle-scene__cord:nth-of-type(5) {
+  display: none;
+}
+
+.toggle-scene__cord-end {
+  stroke: var(--cord);
+  fill: var(--cord);
+}
+
+.toggle-scene__dummy-cord {
+  stroke-width: 6;
+  stroke: var(--cord);
+}
+
+.bulb__filament {
+  stroke: var(--filament);
+}
+
+.bulb__shine {
+  stroke: var(--shine);
+}
+
+.bulb__flash {
+  stroke: #f5e0a3;
+  display: none;
+}
+
+.bulb__bulb {
+  stroke: var(--stroke);
+  fill: hsla(
+    calc(180 - (95 * var(--on))),
+    80%,
+    80%,
+    calc(0.1 + (0.4 * var(--on)))
+  );
+}
+
+.bulb__cap {
+  fill: var(--cap);
+}
+
+.bulb__cap-shine {
+  fill: var(--shine);
+}
+
+.bulb__cap-outline {
+  stroke: var(--stroke);
+}
+
+.bear {
+  display: none;
+}
+
+.bear__fur {
+  fill: #784421;
+}
+
+.bear__pad {
+  fill: #deaa87;
+}
+
+/* Cửa + gấu */
+.doorway {
+  position: absolute;
+  top: 50%;
+  height: calc(var(--size) * 4);
+  width: calc(var(--size) * 1.5);
+  transform: translate(0, calc(var(--size) * -0.75));
+  left: calc(50% + (var(--size) * 0.5));
+  -webkit-clip-path: inset(0 0 0 -200%);
+  clip-path: inset(0 0 0 -200%);
+}
+
+.doorway__opening {
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  background: #1a1a1a;
+  transform: translate3d(0, 0, calc(var(--depth) * -1));
+}
+
+.bear {
+  position: absolute;
+  top: 10%;
+  width: var(--size);
+}
+
+.door {
+  --panel: hsl(30, 20%, calc(12% + (var(--on) * 40%)));
+  height: 100%;
+  position: absolute;
+  width: 100%;
+  transform-origin: 100% 50%;
+  transform-style: preserve-3d;
+  transform: rotateY(0deg);
+}
+
+.door__panel {
+  width: 30%;
+  height: 35%;
+  position: absolute;
+  border: 1vmin var(--panel) solid;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) translate(var(--x), var(--y));
+}
+
+.door__panel:nth-of-type(1) {
+  --x: -70%;
+  --y: -70%;
+}
+
+.door__panel:nth-of-type(2) {
+  --x: 70%;
+  --y: -70%;
+}
+
+.door__panel:nth-of-type(3) {
+  --x: -70%;
+  --y: 70%;
+}
+
+.door__panel:nth-of-type(4) {
+  --x: 70%;
+  --y: 70%;
+}
+
+.door__handle {
+  height: 4vmin;
+  width: 4vmin;
+  position: absolute;
+  left: 10%;
+  top: 50%;
+  transform: translate3d(0, -50%, 1vmin);
+}
+
+.door__handle > div {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  background-color: hsl(
+    45,
+    70%,
+    calc((var(--lightness, 20%)) + (var(--on) * 40%))
+  );
+}
+
+.door__handle > div:nth-of-type(1) {
+  --lightness: 25%;
+}
+
+.door__handle > div:nth-of-type(2) {
+  --lightness: 30%;
+  transform: translate3d(0, 0, calc(var(--depth) * 1));
+}
+
+.door__side {
+  position: absolute;
+}
+
+.door__side:nth-of-type(1) {
+  --lightness: 20%;
+  height: 100%;
+  width: 100%;
+  transform: translate3d(0, 0, 0);
+  z-index: 3;
+  background-color: hsl(
+    30,
+    20%,
+    calc((var(--lightness, 20%)) + (var(--on) * 40%))
+  );
+}
+
+.door__side:nth-of-type(2) {
+  --lightness: 10%;
+  height: 100%;
+  width: 100%;
+  transform: translate3d(0, 0, calc(var(--depth) * -1));
+}
+
+.door__side {
+  background-color: hsl(
+    30,
+    20%,
+    calc((var(--lightness, 20%)) + (var(--on) * 40%))
+  );
+}
+
+/* ===== VỊ TRÍ 2 Ô NHIỆT ĐỘ / ĐỘ ẨM ===== */
+.sensor-panels {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  display: flex;
+  gap: 24px;
+}
+
+/* ép lại style nếu temperature-box cũ đang absolute */
+.sensor-panels .sensor-box.temperature-box,
+.sensor-panels .sensor-box.humidity-box {
+  position: relative;
+  top: auto;
+  right: auto;
+  margin: 0;
+}
+
+/* ===== NÚT CÀI ĐẶT FLOATING ===== */
+.settings-fab {
+  position: absolute;
+  top: 18px;
+  left: 24px;
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  border: none;
+  background: #ffffff;
+  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.settings-fab .settings-icon {
+  font-size: 20px;
+  color: #9b5efb;
+}
+
+/* ===== QUẠT GÓC DƯỚI BÊN TRÁI ===== */
+.fan-wrapper {
+  position: absolute;
+  left: 80px;
+  bottom: 40px;
+  width: 260px;
+  height: 280px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+/* hiện quạt khi allowFanControl = true */
+.fan-wrapper.fan-allowed {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* chân quạt */
+.fan-base {
+  position: absolute;
+  bottom: 0;
+  left: 25%;
+  width: 50%;
+  height: 40px;
+  background: #ffb300;
+  border-radius: 20px 20px 8px 8px;
+}
+
+/* thân quạt */
+.fan-stand {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  width: 18px;
+  height: 150px;
+  background: #0044aa;
+  transform: translateX(-50%);
+}
+
+/* đầu quạt (vùng chứa rotor + tâm) */
+.fan-head {
+  position: absolute;
+  bottom: 160px;
+  left: 50%;
+  width: 180px;
+  height: 180px;
+  transform: translateX(-50%);
+}
+
+/* phần quay bên trong */
+.fan-rotor {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: transparent;
+  transform-origin: 50% 50%;
+  z-index: 1;
+}
+
+/* tâm quạt */
+.fan-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 80px;
+  height: 80px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: #015ad9;
+  border: 12px solid #003a90;
+  z-index: 2; /* nằm trên các cánh */
+}
+
+/* cánh quạt – mọc từ đúng tâm, chia đều 120° */
+.fan-blade {
+  position: absolute;
+  width: 90px;
+  height: 150px;
+  background: #ffb300;
+  border-radius: 90px 90px 90px 90px;
+  top: 50%;
+  left: 50%;
+  /* gốc xoay gần đáy, để đáy nằm ở tâm */
+  transform-origin: 50% 90%;
+}
+
+.fan-blade.blade1 {
+  transform: translate(-50%, -90%) rotate(0deg);
+}
+
+.fan-blade.blade2 {
+  transform: translate(-50%, -90%) rotate(120deg);
+}
+
+.fan-blade.blade3 {
+  transform: translate(-50%, -90%) rotate(240deg);
+}
+
+/* quay quạt khi FAN ON */
+.fan-wrapper.fan-on .fan-rotor {
+  animation: fan-spin 0.6s linear infinite;
+}
+
+@keyframes fan-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* ===== MODAL CÀI ĐẶT ===== */
+.settings-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 50;
+}
+
+.settings-modal-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.settings-modal {
+  width: 360px;
+  max-width: calc(100% - 40px);
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 18px 20px 16px;
+  box-shadow: 0 24px 50px rgba(15, 23, 42, 0.4);
+  color: #111827;
+  font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+}
+
+.settings-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.settings-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #4b5563;
+}
+
+.settings-modal-title .settings-icon {
+  color: #9b5efb;
+}
+
+.settings-modal-close {
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  cursor: pointer;
+  color: #6b7280;
+}
+
+.settings-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.settings-card {
+  background: #f9fafb;
+  border-radius: 14px;
+  padding: 12px 12px 10px;
+  box-shadow: 0 0 0 1px rgba(209, 213, 219, 0.6);
+}
+
+.settings-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  white-space: nowrap;  /* ⛔ Không cho xuống dòng */
+  gap: 12px;           /* ✔ Tạo khoảng cách hợp lý */
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.settings-card-header--column {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+/* toggle ON/OFF trong modal */
+.switch-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.switch-toggle input {
+  display: none;
+}
+
+.switch-toggle-slider {
+  width: 42px;
+  height: 22px;
+  border-radius: 999px;
+  background: #d1d5db;
+  position: relative;
+  transition: background 0.2s;
+}
+
+.switch-toggle-slider::before {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: #ffffff;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.switch-toggle input:checked + .switch-toggle-slider {
+  background: linear-gradient(135deg, #9b5efb, #6366f1);
+}
+
+.switch-toggle input:checked + .switch-toggle-slider::before {
+  transform: translateX(18px);
+}
+
+.switch-toggle-text {
+  font-weight: 600;
+}
+
+/* AES/DES buttons */
+.enc-options {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.enc-option {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.enc-option--primary {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.6);
+}
+
+/* nút Áp dụng */
+.settings-modal-footer {
+  display: flex;
+  justify-content: center;
+}
+
+.settings-apply-btn {
+  width: 100%;
+  padding: 9px 0;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  box-shadow: 0 12px 25px rgba(129, 140, 248, 0.5);
+}
+
+/* responsive nhỏ */
+@media (max-width: 600px) {
+  .sensor-panels {
+    right: 10px;
+    gap: 12px;
+  }
+  .fan-wrapper {
+    left: 20px;
+    transform: scale(0.8);
+    transform-origin: bottom left;
+  }
+}

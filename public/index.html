@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>ESP32 Simulator - Device Control</title>
+
+  <!-- Font đẹp cho phần Cài đặt -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+
+  <!-- Nút Cài đặt góc trên bên trái -->
+  <button class="settings-fab" id="settings-btn" aria-label="Cài đặt">
+    <span class="settings-icon">⚙</span>
+  </button>
+
+  <!-- Cụm panel Nhiệt độ + Độ ẩm góc trên bên phải -->
+  <div class="sensor-panels">
+    <!-- Nhiệt độ -->
+    <div class="temperature-box sensor-box">
+      <div class="temp-label">NHIỆT ĐỘ</div>
+      <div class="led-display">
+        <div class="digit" id="digit1">
+          <span class="segment a"></span>
+          <span class="segment b"></span>
+          <span class="segment c"></span>
+          <span class="segment d"></span>
+          <span class="segment e"></span>
+          <span class="segment f"></span>
+          <span class="segment g"></span>
+        </div>
+        <div class="digit" id="digit2">
+          <span class="segment a"></span>
+          <span class="segment b"></span>
+          <span class="segment c"></span>
+          <span class="segment d"></span>
+          <span class="segment e"></span>
+          <span class="segment f"></span>
+          <span class="segment g"></span>
+        </div>
+        <div class="degree-symbol">°</div>
+        <div class="celsius-symbol">C</div>
+      </div>
+    </div>
+
+    <!-- Độ ẩm -->
+    <div class="temperature-box sensor-box humidity-box">
+      <div class="temp-label">ĐỘ ẨM</div>
+      <div class="led-display">
+        <div class="digit" id="h-digit1">
+          <span class="segment a"></span>
+          <span class="segment b"></span>
+          <span class="segment c"></span>
+          <span class="segment d"></span>
+          <span class="segment e"></span>
+          <span class="segment f"></span>
+          <span class="segment g"></span>
+        </div>
+        <div class="digit" id="h-digit2">
+          <span class="segment a"></span>
+          <span class="segment b"></span>
+          <span class="segment c"></span>
+          <span class="segment d"></span>
+          <span class="segment e"></span>
+          <span class="segment f"></span>
+          <span class="segment g"></span>
+        </div>
+        <div class="percent-symbol">%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quạt góc dưới bên trái -->
+  <!-- FAN MODULE -->
+<div class="fan-wrapper" id="fanWrapper">
+  <div class="fan-base"></div>
+  <div class="fan-stand"></div>
+
+  <div class="fan-head">
+    <div class="fan-rotor">
+      <div class="fan-blade blade1"></div>
+      <div class="fan-blade blade2"></div>
+      <div class="fan-blade blade3"></div>
+    </div>
+    <div class="fan-center"></div>
+  </div>
+</div>
+
+  <!-- Toggle + dây kéo + bóng đèn -->
+  <div class="toggle">
+    <input id="light-mode" type="checkbox" />
+    <!-- Phần SVG toggle giữ nguyên từ bản gốc -->
+    <svg class="toggle-scene" xmlns="http://www.w3.org/2000/svg" preserveaspectratio="xMinYMin" viewBox="0 0 197.451 581.081">
+      <defs>
+        <marker id="e" orient="auto" overflow="visible" refx="0" refy="0">
+          <path class="toggle-scene__cord-end" fill-rule="evenodd" stroke-width=".2666" d="M.98 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+        </marker>
+        <marker id="d" orient="auto" overflow="visible" refx="0" refy="0">
+          <path class="toggle-scene__cord-end" fill-rule="evenodd" stroke-width=".2666" d="M.98 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+        </marker>
+        <marker id="c" orient="auto" overflow="visible" refx="0" refy="0">
+          <path class="toggle-scene__cord-end" fill-rule="evenodd" stroke-width=".2666" d="M.98 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+        </marker>
+        <marker id="b" orient="auto" overflow="visible" refx="0" refy="0">
+          <path class="toggle-scene__cord-end" fill-rule="evenodd" stroke-width=".2666" d="M.98 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+        </marker>
+        <marker id="a" orient="auto" overflow="visible" refx="0" refy="0">
+          <path class="toggle-scene__cord-end" fill-rule="evenodd" stroke-width=".2666" d="M.98 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+        </marker>
+        <clippath id="scene" clippathunit="userSpaceOnUse">
+          <rect x="0" y="0" width="208.5" height="581.081"></rect>
+        </clippath>
+        <clippath id="g" clippathunits="userSpaceOnUse">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="4.677" d="M-774.546 827.629s12.917-13.473 29.203-13.412c16.53.062 29.203 13.412 29.203 13.412v53.6s-8.825 16-29.203 16c-21.674 0-29.203-16-29.203-16z"></path>
+        </clippath>
+        <clippath id="knuckles" clippathunits="userSpaceOnUse">
+          <path d="M-868.418 945.051c-4.188 73.011 78.255 53.244 150.216 52.941 82.387-.346 98.921-19.444 98.921-47.058 0-27.615-4.788-42.55-73.823-42.55-69.036 0-171.436-30.937-175.314 36.667z"></path>
+        </clippath>
+      </defs>
+      <g clip-path="url(#scene)">
+        <g class="toggle-scene__arm toggle-scene__arm--main bear__arm bear__arm--back">
+          <g transform="translate(905.657 -597.025)" clip-path="url(#knuckles)">
+            <path class="bear__fur" d="M-868.418 945.051c-4.188 73.011 78.255 53.244 150.216 52.941 82.387-.346 98.921-19.444 98.921-47.058 0-27.615-4.788-42.55-73.823-42.55-69.036 0-171.436-30.937-175.314 36.667z"></path>
+            <ellipse class="bear__pad" cx="804.83" cy="950.986" rx="29.911" ry="29.414" transform="scale(-1 1)"></ellipse>
+          </g>
+        </g>
+      </g>
+      <g class="toggle-scene__cords">
+        <path class="toggle-scene__cord" marker-end="url(#a)" fill="none" stroke-linecap="square" stroke-width="6" d="M123.228-28.56v150.493" transform="translate(-24.503 256.106)"></path>
+        <path class="toggle-scene__cord" marker-end="url(#a)" fill="none" stroke-linecap="square" stroke-width="6" d="M123.228-28.59s28 8.131 28 19.506-18.667 13.005-28 19.507c-9.333 6.502-28 8.131-28 19.506s28 19.507 28 19.507" transform="translate(-24.503 256.106)"></path>
+        <path class="toggle-scene__cord" marker-end="url(#a)" fill="none" stroke-linecap="square" stroke-width="6" d="M123.228-28.575s-20 16.871-20 28.468c0 11.597 13.333 18.978 20 28.468 6.667 9.489 20 16.87 20 28.467 0 11.597-20 28.468-20 28.468" transform="translate(-24.503 256.106)"></path>
+        <path class="toggle-scene__cord" marker-end="url(#a)" fill="none" stroke-linecap="square" stroke-width="6" d="M123.228-28.569s16 20.623 16 32.782c0 12.16-10.667 21.855-16 32.782-5.333 10.928-16 20.623-16 32.782 0 12.16 16 32.782 16 32.782" transform="translate(-24.503 256.106)"></path>
+        <path class="toggle-scene__cord" marker-end="url(#a)" fill="none" stroke-linecap="square" stroke-width="6" d="M123.228-28.563s-10 24.647-10 37.623c0 12.977 6.667 25.082 10 37.623 3.333 12.541 10 24.647 10 37.623 0 12.977-10 37.623-10 37.623" transform="translate(-24.503 256.106)"></path>
+        <g class="line toggle-scene__dummy-cord">
+          <line marker-end="url(#a)" x1="98.7255" x2="98.7255" y1="250.5405" y2="380.5405"></line>
+        </g>
+        <circle class="toggle-scene__hit-spot" cx="98.7255" cy="380.5405" r="60" fill="transparent"></circle>
+      </g>
+      <g class="toggle-scene__bulb bulb" transform="translate(844.069 -645.213)">
+        <path class="bulb__cap" stroke-linecap="round" stroke-linejoin="round" stroke-width="4.677" d="M-774.546 827.629s12.917-13.473 29.203-13.412c16.53.062 29.203 13.412 29.203 13.412v53.6s-8.825 16-29.203 16c-21.674 0-29.203-16-29.203-16z"></path>
+        <path class="bulb__cap-shine" d="M-778.379 802.873h25.512v118.409h-25.512z" clip-path="url(#g)" transform="matrix(.52452 0 0 .90177 -368.282 82.976)"></path>
+        <path class="bulb__cap" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M-774.546 827.629s12.917-13.473 29.203-13.412c16.53.062 29.203 13.412 29.203 13.412v0s-8.439 10.115-28.817 10.115c-21.673 0-29.59-10.115-29.59-10.115z"></path>
+        <path class="bulb__cap-outline" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="4.677" d="M-774.546 827.629s12.917-13.473 29.203-13.412c16.53.062 29.203 13.412 29.203 13.412v53.6s-8.825 16-29.203 16c-21.674 0-29.203-16-29.203-16z"></path>
+        <g class="bulb__filament" fill="none" stroke-linecap="round" stroke-width="5">
+          <path d="M-752.914 823.875l-8.858-33.06"></path>
+          <path d="M-737.772 823.875l8.858-33.06"></path>
+        </g>
+        <path class="bulb__bulb" stroke-linecap="round" stroke-width="5" d="M-783.192 803.855c5.251 8.815 5.295 21.32 13.272 27.774 12.299 8.045 36.46 8.115 49.127 0 7.976-6.454 8.022-18.96 13.273-27.774 3.992-6.7 14.408-19.811 14.408-19.811 8.276-11.539 12.769-24.594 12.769-38.699 0-35.898-29.102-65-65-65-35.899 0-65 29.102-65 65 0 13.667 4.217 26.348 12.405 38.2 0 0 10.754 13.61 14.746 20.31z"></path>
+        <circle class="bulb__flash" cx="-745.343" cy="743.939" r="83.725" fill="none" stroke-dasharray="10,30" stroke-linecap="round" stroke-linejoin="round" stroke-width="10"></circle>
+        <path class="bulb__shine" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="12" d="M-789.19 757.501a45.897 45.897 0 013.915-36.189 45.897 45.897 0 0129.031-21.957"></path>
+      </g>
+      <g clip-path="url(#scene)">
+        <g class="toggle-scene__arm toggle-scene__arm--front bear__arm bear__arm--front">
+          <g transform="translate(905.657 -597.025)">
+            <path fill="transparent" d="M-868.418 945.051c-4.188 73.011 78.255 53.244 150.216 52.941 82.387-.346 98.921-19.444 98.921-47.058 0-27.615-4.788-42.55-73.823-42.55-69.036 0-171.436-30.937-175.314 36.667z"></path>
+            <ellipse cx="804.83" cy="950.986" fill="transparent" rx="29.911" ry="29.414" transform="scale(-1 1)"></ellipse>
+          </g>
+          <g clip-path="url(#knuckles)" transform="translate(905.657 -597.025)">
+            <path class="toggle-scene__paw bear__paw bear__fur" d="M-798.725 945.051c4.188 73.011-78.254 53.244-150.215 52.941-82.387-.346-98.922-19.444-98.922-47.058 0-27.615 4.788-42.55 73.824-42.55 69.035 0 171.436-30.937 175.313 36.667z"></path>
+          </g>
+        </g>
+      </g>
+    </svg>
+  </div>
+
+  <!-- Cửa + gấu -->
+  <div class="doorway">
+    <div class="doorway__opening"></div>
+    <svg class="bear" viewBox="0 0 284.946 359.737">
+      <g transform="translate(-42.557 -974.222) scale(1.23353)">
+        <path class="bear__fur" d="M263.91 1081.415a113.968 96.863 0 00-113.919-95.7 113.968 96.863 0 00-113.9 95.7h227.818z"></path>
+        <path class="bear__fur" d="M250.428 903.362c0 66.271-44.754 114.995-102.428 114.995s-98.428-48.724-98.428-114.995c0-66.27 40.754-92.994 98.428-92.994s102.428 26.723 102.428 92.994z"></path>
+        <path d="M217 972.862c0 21.54-30.445 42-68 42s-66-20.46-66-42c0-21.539 28.445-36 66-36s68 14.461 68 36z" fill="#e9c6af"></path>
+        <path d="M181.5 944.362c0 8.284-20.6 26.5-32.75 26.5-12.15 0-34.75-18.216-34.75-26.5 0-8.284 22.6-13.5 34.75-13.5 12.15 0 32.75 5.216 32.75 13.5z"></path>
+        <ellipse class="bear__fur" cx="69" cy="823.073" rx="34.5" ry="33.289"></ellipse>
+        <path d="M69 799.673a24.25 23.4 0 00-24.25 23.4 24.25 23.4 0 0019.97 23.01c.277-.407.505-.868.788-1.268a71.11 71.11 0 0111.65-12.802 73.691 73.691 0 016.856-5.227 79.249 79.249 0 017.498-4.469c.54-.283 1.133-.5 1.681-.773A24.25 23.4 0 0069 799.673z" fill="#e9c6af"></path>
+        <g transform="matrix(-1 0 0 1 300 0)">
+          <ellipse class="bear__fur" ry="33.289" rx="34.5" cy="823.073" cx="69"></ellipse>
+          <path d="M69 799.673a24.25 23.4 0 00-24.25 23.4 24.25 23.4 0 0019.97 23.01c.277-.407.505-.868.788-1.268a71.11 71.11 0 0111.65-12.802 73.691 73.691 0 016.856-5.227 79.249 79.249 0 017.498-4.469c.54-.283 1.133-.5 1.681-.773A24.25 23.4 0 0069 799.673z" fill="#e9c6af"></path>
+        </g>
+        <ellipse ry="9.679" rx="9.27" cy="900.389" cx="105.831"></ellipse>
+        <ellipse cx="186.899" cy="900.389" rx="9.27" ry="9.679"></ellipse>
+      </g>
+    </svg>
+    <div class="doorway__door door">
+      <div class="door__side">
+        <div class="door__panel"></div>
+        <div class="door__panel"></div>
+        <div class="door__panel"></div>
+        <div class="door__panel"></div>
+        <div class="door__handle">
+          <div></div>
+          <div></div>
+        </div>
+      </div>
+      <div class="door__side"></div>
+    </div>
+  </div>
+
+  <!-- Modal Cài đặt -->
+  <div class="settings-modal-backdrop" id="settings-modal">
+    <div class="settings-modal">
+      <div class="settings-modal-header">
+        <div class="settings-modal-title">
+          <span class="settings-icon">⚙</span>
+          <span>Cài đặt</span>
+        </div>
+        <button class="settings-modal-close" id="settings-close">✕</button>
+      </div>
+
+      <div class="settings-modal-body">
+        <!-- Cho phép điều khiển quạt -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <span>Cho phép điều khiển quạt</span>
+            <label class="switch-toggle">
+              <input type="checkbox" id="fan-allow-toggle">
+              <span class="switch-toggle-slider"></span>
+              <span class="switch-toggle-text" id="fan-allow-text">OFF</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Hệ mã hóa -->
+        <div class="settings-card">
+          <div class="settings-card-header settings-card-header--column">
+            <span>Hệ mã hóa dữ liệu cảm biến:</span>
+          </div>
+          <div class="enc-options">
+            <button type="button" class="enc-option enc-option--primary" id="enc-aes">AES-256</button>
+            <button type="button" class="enc-option" id="enc-des">DES</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-modal-footer">
+        <button class="settings-apply-btn" id="settings-apply">✓ Áp dụng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GSAP -->
+  <script src="https://unpkg.co/gsap@3/dist/gsap.min.js"></script>
+  <script src="https://assets.codepen.io/16327/MorphSVGPlugin3.min.js"></script>
+  <script src="https://unpkg.com/gsap@3/dist/Draggable.min.js"></script>
+
+  <script>
+    // Kết nối socket
+    const socket = io(window.location.origin);
+
+    const INPUT = document.getElementById("light-mode");
+    let ignoreInputChange = false;
+
+    // 7-seg patterns
+    const digitPatterns = {
+      0: ["a", "b", "c", "d", "e", "f"],
+      1: ["b", "c"],
+      2: ["a", "b", "d", "e", "g"],
+      3: ["a", "b", "c", "d", "g"],
+      4: ["b", "c", "f", "g"],
+      5: ["a", "c", "d", "f", "g"],
+      6: ["a", "c", "d", "e", "f", "g"],
+      7: ["a", "b", "c"],
+      8: ["a", "b", "c", "d", "e", "f", "g"],
+      9: ["a", "b", "c", "d", "f", "g"]
+    };
+
+    function displayDigit(digitElement, number) {
+      var segments = digitElement.querySelectorAll(".segment");
+      var i;
+
+      for (i = 0; i < segments.length; i++) {
+        segments[i].classList.remove("active");
+      }
+
+      var pattern = digitPatterns[number];
+      if (!pattern) return;
+
+      for (i = 0; i < pattern.length; i++) {
+        var sel = ".segment." + pattern[i];
+        var seg = digitElement.querySelector(sel);
+        if (seg) seg.classList.add("active");
+      }
+    }
+
+    function updateSevenSeg(value, digit1, digit2) {
+      if (typeof value !== "number" || isNaN(value)) return;
+      var v = Math.round(value);
+      if (v < 0) v = 0;
+      if (v > 99) v = 99;
+      var tens = Math.floor(v / 10);
+      var ones = v % 10;
+      displayDigit(digit1, tens);
+      displayDigit(digit2, ones);
+    }
+
+    function updateTemperature(temp) {
+      var d1 = document.getElementById("digit1");
+      var d2 = document.getElementById("digit2");
+      if (!d1 || !d2) return;
+      updateSevenSeg(temp, d1, d2);
+    }
+
+    function updateHumidity(hum) {
+      var d1 = document.getElementById("h-digit1");
+      var d2 = document.getElementById("h-digit2");
+      if (!d1 || !d2) return;
+      updateSevenSeg(hum, d1, d2);
+    }
+
+    function updateSensorFromObject(obj) {
+      if (!obj) return;
+      if (typeof obj.temperature === "number") {
+        updateTemperature(obj.temperature);
+      }
+      if (typeof obj.humidity === "number") {
+        updateHumidity(obj.humidity);
+      }
+    }
+
+    // GSAP setup
+    const gsapObj = window.gsap;
+    const MorphSVGPlugin = window.MorphSVGPlugin;
+    gsapObj.registerPlugin(MorphSVGPlugin);
+
+    const ARMS = document.querySelectorAll(".bear__arm");
+    const PAW = document.querySelector(".bear__paw");
+    const CORDS = document.querySelectorAll(".toggle-scene__cord");
+    const DUMMY = document.querySelector(".toggle-scene__dummy-cord");
+    const DUMMY_CORD = document.querySelector(".toggle-scene__dummy-cord line");
+    const endY = DUMMY_CORD.getAttribute("y2");
+    const endX = DUMMY_CORD.getAttribute("x2");
+
+    const AUDIO = {
+      DOOR_OPEN: new Audio("https://assets.codepen.io/605876/door-open.mp3"),
+      DOOR_CLOSE: new Audio("https://assets.codepen.io/605876/door-close.mp3"),
+      CLICK: new Audio("https://assets.codepen.io/605876/click.mp3"),
+      FAN: new Audio("https://assets.codepen.io/605876/fan.mp3")
+    };
+    AUDIO.FAN.loop = true;
+
+    const STATE = {
+      ON: false,
+      FAN_ON: false,
+      isAnimating: false,
+      allowFanControl: true,
+      encAlgo: "AES"
+    };
+
+    const fanWrapper = document.querySelector(".fan-wrapper");
+
+    function updateFanUI(isOn) {
+      STATE.FAN_ON = !!isOn;
+      if (fanWrapper) {
+        fanWrapper.classList.toggle("fan-on", STATE.FAN_ON);
+      }
+      if (STATE.FAN_ON) {
+        AUDIO.FAN.play()["catch"](function () {});
+      } else {
+        AUDIO.FAN.pause();
+        AUDIO.FAN.currentTime = 0;
+      }
+    }
+
+    INPUT.addEventListener("change", function () {
+      if (ignoreInputChange) return;
+      var desiredState = INPUT.checked;
+      fetch("/led", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ state: desiredState ? "ON" : "OFF" })
+      })["catch"](function () {
+        alert("Không thể gửi lệnh điều khiển thiết bị!");
+      });
+    });
+
+    // Gấu + dây kéo
+    gsapObj.set(PAW, { transformOrigin: "50% 50%", xPercent: -30 });
+    gsapObj.set(".bulb", { z: 10 });
+    gsapObj.set(ARMS, { xPercent: 10, rotation: -90, transformOrigin: "100% 50%", yPercent: -2, display: "block" });
+
+    const CONFIG = {
+      ARM_DUR: 0.4,
+      CLENCH_DUR: 0.1,
+      BEAR_START: 40,
+      BEAR_FINISH: -55,
+      BEAR_ROTATE: -50
+    };
+
+    gsapObj.set(".bear", { rotate: CONFIG.BEAR_ROTATE, xPercent: CONFIG.BEAR_START, transformOrigin: "50% 50%", scale: 0, display: "block" });
+
+    function CORD_TL() {
+      var TL = gsapObj.timeline({
+        paused: false,
+        onStart: function () {
+          STATE.ON = !STATE.ON;
+          INPUT.checked = STATE.ON;
+          gsapObj.set(document.documentElement, { "--on": STATE.ON ? 1 : 0 });
+          gsapObj.set([DUMMY], { display: "none" });
+          gsapObj.set(CORDS[0], { display: "block" });
+          AUDIO.CLICK.play();
+        },
+        onComplete: function () {
+          gsapObj.set([DUMMY], { display: "block" });
+          gsapObj.set(CORDS[0], { display: "none" });
+        }
+      });
+
+      for (var i = 1; i < CORDS.length; i++) {
+        TL.add(
+          gsapObj.to(CORDS[0], {
+            morphSVG: CORDS[i],
+            duration: 0.1,
+            repeat: 1,
+            yoyo: true
+          })
+        );
+      }
+      return TL;
+    }
+
+    function BEAR_CONTROL_TL() {
+      var TL = gsapObj.timeline({
+        paused: false,
+        onStart: function () { STATE.isAnimating = true; },
+        onComplete: function () { STATE.isAnimating = false; }
+      });
+
+      TL.to(".door", {
+        duration: 0.3,
+        rotateY: 25,
+        onStart: function () { AUDIO.DOOR_OPEN.play(); }
+      })
+      .to(".bear", {
+        duration: 0.5,
+        xPercent: CONFIG.BEAR_FINISH,
+        onStart: function () { gsapObj.set(".bear", { scale: 1 }); }
+      })
+      .to(".bear", { duration: 0.2, xPercent: CONFIG.BEAR_FINISH })
+      .to(".bear", { duration: 0.5, xPercent: CONFIG.BEAR_START })
+      .to(ARMS, { duration: 0.5, rotation: 0, xPercent: 0, yPercent: 0 })
+      .to([PAW, "#knuckles"], {
+        duration: 0.2,
+        xPercent: function (_, target) { return target.id === "knuckles" ? 10 : 0; }
+      }, ">-0.25")
+      .to(ARMS, { duration: 0.2, rotation: 5 })
+      .to(DUMMY_CORD, {
+        duration: CONFIG.CLENCH_DUR,
+        attr: { x2: parseInt(endX, 10) + 20, y2: parseInt(endY, 10) + 60 }
+      }, "<")
+      .to(DUMMY_CORD, {
+        duration: CONFIG.CLENCH_DUR,
+        attr: { x2: endX, y2: endY }
+      }, ">")
+      .to([PAW, "#knuckles"], {
+        duration: CONFIG.CLENCH_DUR,
+        xPercent: function (_, target) { return target.id === "knuckles" ? 0 : -28; }
+      }, "<")
+      .add(function () { CORD_TL(); }, "<")
+      .to(ARMS, { duration: 0.5, rotation: -90, xPercent: 10 })
+      .to(".door", {
+        duration: 0.3,
+        rotateY: 0,
+        onComplete: function () { AUDIO.DOOR_CLOSE.play(); }
+      });
+
+      return TL;
+    }
+
+    // SOCKET EVENTS
+    socket.on("initialState", function (state) {
+      STATE.ON = !!state.led;
+      STATE.FAN_ON = !!state.fan;
+      STATE.allowFanControl = state.allowFanControl !== false;
+      STATE.encAlgo = (state.encAlgo || "AES").toUpperCase();
+
+      updateSensorFromObject(state);
+
+      ignoreInputChange = true;
+      INPUT.checked = STATE.ON;
+      gsapObj.set(document.documentElement, { "--on": STATE.ON ? 1 : 0 });
+      setTimeout(function () { ignoreInputChange = false; }, 100);
+
+      updateFanUI(STATE.FAN_ON);
+      syncSettingsControls();
+    });
+
+    socket.on("ledStateChanged", function (data) {
+      var ledOn = !!data.led;
+      if (ledOn !== STATE.ON && !STATE.isAnimating) {
+        BEAR_CONTROL_TL();
+      }
+    });
+
+    socket.on("temperatureUpdated", function (data) {
+      updateSensorFromObject(data);
+    });
+
+    socket.on("fanStateChanged", function (data) {
+      updateFanUI(data.fan);
+    });
+
+    socket.on("settingsUpdated", function (data) {
+      if (typeof data.allowFanControl !== "undefined") {
+        STATE.allowFanControl = !!data.allowFanControl;
+      }
+      if (data.encAlgo) {
+        STATE.encAlgo = data.encAlgo.toUpperCase();
+      }
+      syncSettingsControls();
+    });
+
+    socket.on("connect", function () {
+      console.log("Connected to ESP32");
+    });
+    socket.on("disconnect", function () {
+      console.log("Disconnected from ESP32");
+    });
+
+    // Poll /status định kỳ
+    var pollingInterval = null;
+
+function pollStatus() {
+  fetch("/status?" + Date.now(), {
+    cache: "no-store",
+    headers: { "Cache-Control": "no-cache", "Pragma": "no-cache" }
+  })
+    .then(function (res) {
+      if (!res.ok) {
+        console.warn("Polling failed:", res.status);
+        return null;
+      }
+      return res.json();
+    })
+    .then(function (data) {
+      if (!data) return;
+
+      if (typeof data.led === "boolean" && data.led !== STATE.ON && !STATE.isAnimating) {
+        BEAR_CONTROL_TL();
+      }
+
+      // ❗ Không cập nhật nhiệt độ / độ ẩm qua polling nữa,
+      // để UI chỉ cập nhật theo socket 'temperatureUpdated' (5s/lần).
+      // updateSensorFromObject(data);
+
+      if (typeof data.fan === "boolean" && data.fan !== STATE.FAN_ON) {
+        updateFanUI(data.fan);
+      }
+    })
+    ["catch"](function (err) {
+      console.error("Polling error:", err.message);
+    });
+}
+    function startPolling() {
+      if (pollingInterval) return;
+      pollingInterval = setInterval(pollStatus, 2000);
+    }
+
+    function stopPolling() {
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+        pollingInterval = null;
+      }
+    }
+
+    document.addEventListener("visibilitychange", function () {
+      if (document.hidden) {
+        // vẫn để polling ở nền nếu muốn
+      } else {
+        pollStatus();
+        startPolling();
+      }
+    });
+
+    startPolling();
+    setTimeout(pollStatus, 500);
+
+    // ===== Modal Cài đặt =====
+    var settingsBtn = document.getElementById("settings-btn");
+    var settingsModal = document.getElementById("settings-modal");
+    var settingsClose = document.getElementById("settings-close");
+    var settingsApply = document.getElementById("settings-apply");
+    var fanAllowToggle = document.getElementById("fan-allow-toggle");
+    var fanAllowText = document.getElementById("fan-allow-text");
+    var encAESBtn = document.getElementById("enc-aes");
+    var encDESBtn = document.getElementById("enc-des");
+
+    var modalEncAlgo = "AES";
+
+    function openSettingsModal() {
+      syncSettingsControls();
+      settingsModal.classList.add("open");
+    }
+
+    function closeSettingsModal() {
+      settingsModal.classList.remove("open");
+    }
+
+    function setEncAlgoUI(algo) {
+      modalEncAlgo = algo.toUpperCase() === "DES" ? "DES" : "AES";
+      encAESBtn.classList.toggle("enc-option--primary", modalEncAlgo === "AES");
+      encDESBtn.classList.toggle("enc-option--primary", modalEncAlgo === "DES");
+    }
+
+    function syncSettingsControls() {
+      fanAllowToggle.checked = STATE.allowFanControl;
+      fanAllowText.textContent = STATE.allowFanControl ? "ON" : "OFF";
+
+      if (fanWrapper) {
+        fanWrapper.classList.toggle("fan-allowed", STATE.allowFanControl);
+      }
+
+      setEncAlgoUI(STATE.encAlgo);
+    }
+
+    settingsBtn.addEventListener("click", openSettingsModal);
+    settingsClose.addEventListener("click", closeSettingsModal);
+    settingsModal.addEventListener("click", function (e) {
+      if (e.target === settingsModal) {
+        closeSettingsModal();
+      }
+    });
+
+    fanAllowToggle.addEventListener("change", function () {
+      fanAllowText.textContent = fanAllowToggle.checked ? "ON" : "OFF";
+    });
+
+    encAESBtn.addEventListener("click", function () {
+      setEncAlgoUI("AES");
+    });
+    encDESBtn.addEventListener("click", function () {
+      setEncAlgoUI("DES");
+    });
+
+    settingsApply.addEventListener("click", function () {
+      var payload = {
+        allowFanControl: fanAllowToggle.checked,
+        algo: modalEncAlgo
+      };
+
+      fetch("/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          if (typeof data.allowFanControl !== "undefined") {
+            STATE.allowFanControl = !!data.allowFanControl;
+          }
+          if (data.encAlgo) {
+            STATE.encAlgo = data.encAlgo.toUpperCase();
+          }
+          syncSettingsControls();
+          closeSettingsModal();
+        })
+        ["catch"](function () {
+          closeSettingsModal();
+        });
+    });
+
+    // Giá trị ban đầu cho 7-seg
+    updateTemperature(25);
+    updateHumidity(50);
+  </script>
+</body>
+</html>
